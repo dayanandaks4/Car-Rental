@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}My Rentals - Rental App{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-center mb-5">
+                <i class="fas fa-list"></i> My Rentals
+            </h1>
+        </div>
+    </div>
+
+    {% if rentals %}
+    <div class="row">
+        {% for rental in rentals %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="vehicle-card">
+                <div class="vehicle-image" style="background-image: url('{{ rental.vehicle.image_url }}')"></div>
+                <div class="vehicle-info">
+                    <h5 class="vehicle-name">{{ rental.vehicle.name }}</h5>
+                    <p class="vehicle-model">{{ rental.vehicle.model }}</p>
+                    
+                    <div class="rental-details">
+                        <div class="row mb-2">
+                            <div class="col-6">
+                                <small class="text-muted">Start Date</small>
+                                <div>{{ rental.start_date.strftime('%B %d, %Y') }}</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">End Date</small>
+                                <div>{{ rental.end_date.strftime('%B %d, %Y') }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-2">
+                            <div class="col-6">
+                                <small class="text-muted">Duration</small>
+                                <div>{{ (rental.end_date - rental.start_date).days }} days</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Total Price</small>
+                                <div class="fw-bold text-success">${{ "%.2f"|format(rental.total_price) }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <small class="text-muted">Status</small>
+                                <div>
+                                    {% if rental.is_returned %}
+                                        <span class="badge bg-success">Returned</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Active</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if not rental.is_returned %}
+                    <div class="d-grid">
+                        <a href="{{ url_for('return_vehicle', rental_id=rental.id) }}" 
+                           class="btn btn-danger" 
+                           onclick="return confirm('Are you sure you want to return this vehicle?')">
+                            <i class="fas fa-undo"></i> Return Vehicle
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-car fa-3x text-muted mb-3"></i>
+            <h3>No Active Rentals</h3>
+            <p class="text-muted">You don't have any active rentals at the moment.</p>
+            <a href="{{ url_for('vehicle_selection') }}" class="btn btn-primary">
+                <i class="fas fa-car-side"></i> Browse Vehicles
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Rental Details - Rental App{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-center mb-5">
+                <i class="fas fa-calendar-check"></i> Rental Details
+            </h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Selected Vehicles -->
+            <div class="rental-summary">
+                <h3><i class="fas fa-list"></i> Selected Vehicles</h3>
+                <form method="POST" action="{{ url_for('confirm_rental') }}" class="needs-validation" novalidate>
+                    {% for vehicle in vehicles %}
+                    <div class="rental-item">
+                        <div class="rental-item-image" style="background-image: url('{{ vehicle.image_url }}')"></div>
+                        <div class="rental-item-info">
+                            <h5>{{ vehicle.name }} - {{ vehicle.model }}</h5>
+                            <p class="text-muted">{{ vehicle.vehicle_type.upper() }} • {{ vehicle.mileage }}</p>
+                            <div class="rental-item-price">${{ "%.2f"|format(vehicle.price_per_day) }}/day</div>
+                        </div>
+                        <input type="hidden" name="vehicle_ids" value="{{ vehicle.id }}">
+                        <input type="hidden" name="price_per_day_{{ vehicle.id }}" value="{{ vehicle.price_per_day }}">
+                    </div>
+                    {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Rental Form -->
+            <div class="rental-summary">
+                <h3><i class="fas fa-calendar-alt"></i> Rental Period</h3>
+                <form method="POST" action="{{ url_for('confirm_rental') }}" class="needs-validation" novalidate>
+                    {% for vehicle in vehicles %}
+                        <input type="hidden" name="vehicle_ids" value="{{ vehicle.id }}">
+                    {% endfor %}
+                    
+                    <div class="mb-3">
+                        <label for="startDate" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="startDate" name="start_date" required>
+                        <div class="invalid-feedback">
+                            Please select a start date.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="endDate" class="form-label">Return Date</label>
+                        <input type="date" class="form-control" id="endDate" name="end_date" required>
+                        <div class="invalid-feedback">
+                            Please select an end date.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="totalPrice" class="form-label">Total Price</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="text" class="form-control" id="totalPrice" readonly value="0.00">
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-check"></i> Confirm Rental
+                        </button>
+                        <a href="{{ url_for('vehicle_selection') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Selection
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    const totalPriceElement = document.getElementById('totalPrice');
+    
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    startDateInput.min = today;
+    endDateInput.min = today;
+    
+    // Calculate total price when dates change
+    function calculateTotalPrice() {
+        const startDate = new Date(startDateInput.value);
+        const endDate = new Date(endDateInput.value);
+        
+        if (startDate && endDate && endDate > startDate) {
+            const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+            let total = 0;
+            
+            // Get all vehicle prices
+            const priceInputs = document.querySelectorAll('input[name^="price_per_day_"]');
+            priceInputs.forEach(input => {
+                total += parseFloat(input.value) * days;
+            });
+            
+            totalPriceElement.value = total.toFixed(2);
+        } else {
+            totalPriceElement.value = '0.00';
+        }
+    }
+    
+    startDateInput.addEventListener('change', function() {
+        const startDate = new Date(this.value);
+        const minEndDate = new Date(startDate);
+        minEndDate.setDate(minEndDate.getDate() + 1);
+        endDateInput.min = minEndDate.toISOString().split('T')[0];
+        
+        if (endDateInput.value && new Date(endDateInput.value) <= startDate) {
+            endDateInput.value = '';
+        }
+        
+        calculateTotalPrice();
+    });
+    
+    endDateInput.addEventListener('change', function() {
+        const startDate = new Date(startDateInput.value);
+        const endDate = new Date(this.value);
+        
+        if (endDate <= startDate) {
+            alert('End date must be after start date');
+            this.value = '';
+            return;
+        }
+        
+        calculateTotalPrice();
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Test Page - Rental App{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-center mb-5">
+                <i class="fas fa-bug"></i> Test Page
+            </h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-user-plus"></i> Create Test User</h5>
+                </div>
+                <div class="card-body">
+                    <p>Click the button below to create a test user for testing the admin dashboard functionality.</p>
+                    <button class="btn btn-primary" onclick="createTestUser()">
+                        <i class="fas fa-user-plus"></i> Create Test User
+                    </button>
+                    <div id="testUserResult" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> Test Instructions</h5>
+                </div>
+                <div class="card-body">
+                    <ol>
+                        <li>Create a test user using the button</li>
+                        <li>Logout from admin account</li>
+                        <li>Login as test user (testuser/test123)</li>
+                        <li>Rent a vehicle</li>
+                        <li>Logout from test user</li>
+                        <li>Login as admin (admin/admin123)</li>
+                        <li>Check admin dashboard - should show test user's details</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-database"></i> Current Users in Database</h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-info" onclick="showUsers()">
+                        <i class="fas fa-eye"></i> Show All Users
+                    </button>
+                    <div id="usersList" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function createTestUser() {
+    fetch('/create-test-user')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('testUserResult').innerHTML = 
+                '<div class="alert alert-success">' + data.message + '</div>';
+        })
+        .catch(error => {
+            document.getElementById('testUserResult').innerHTML = 
+                '<div class="alert alert-danger">Error: ' + error + '</div>';
+        });
+}
+
+function showUsers() {
+    // This would require a new API endpoint to list users
+    document.getElementById('usersList').innerHTML = 
+        '<div class="alert alert-info">This feature requires an API endpoint to list users.</div>';
+}
+</script>
+{% endblock %}

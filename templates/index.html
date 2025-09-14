@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - Rental App{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container text-center">
+        <h1><i class="fas fa-car"></i> Welcome to RentalApp</h1>
+        <p>Your premier destination for car and bike rentals</p>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <p class="lead">Discover our wide selection of premium vehicles at competitive prices. Whether you need a car for a business trip or a bike for an adventure, we've got you covered.</p>
+            </div>
+        </div>
+        <div class="mt-4">
+            {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('signup') }}" class="btn btn-success btn-lg me-3">
+                    <i class="fas fa-user-plus"></i> Get Started
+                </a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
+            {% else %}
+                <a href="{{ url_for('vehicle_selection') }}" class="btn btn-success btn-lg me-3">
+                    <i class="fas fa-car-side"></i> Browse Vehicles
+                </a>
+                <a href="{{ url_for('my_rentals') }}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-list"></i> My Rentals
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <i class="fas fa-car fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Cars</h5>
+                    <p class="card-text">Choose from our premium collection of cars ranging from economy to luxury vehicles.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <i class="fas fa-motorcycle fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Bikes</h5>
+                    <p class="card-text">Experience the thrill with our selection of motorcycles and bikes for every adventure.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <i class="fas fa-clock fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">24/7 Service</h5>
+                    <p class="card-text">Round-the-clock customer support and easy online booking system for your convenience.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12 text-center">
+            <h2>Why Choose RentalApp?</h2>
+            <div class="row mt-4">
+                <div class="col-md-3 mb-3">
+                    <i class="fas fa-shield-alt fa-2x text-success mb-2"></i>
+                    <h6>Secure & Safe</h6>
+                    <p class="text-muted">All vehicles are regularly maintained and insured.</p>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
+                    <h6>Best Prices</h6>
+                    <p class="text-muted">Competitive rates with no hidden charges.</p>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <i class="fas fa-mobile-alt fa-2x text-success mb-2"></i>
+                    <h6>Easy Booking</h6>
+                    <p class="text-muted">Simple and intuitive online booking process.</p>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <i class="fas fa-headset fa-2x text-success mb-2"></i>
+                    <h6>24/7 Support</h6>
+                    <p class="text-muted">Always here to help with any questions.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

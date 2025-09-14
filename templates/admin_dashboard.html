@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Rental App{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-center mb-5">
+                <i class="fas fa-tachometer-alt"></i> Admin Dashboard
+            </h1>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="admin-stats">
+        <div class="stat-card">
+            <div class="stat-number">{{ today_rentals|length }}</div>
+            <div class="stat-label">Rentals Today</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ active_rentals|length }}</div>
+            <div class="stat-label">Active Rentals</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ active_rentals|sum(attribute='total_price')|round(2) }}</div>
+            <div class="stat-label">Total Revenue ($)</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ active_rentals|groupby('vehicle.vehicle_type')|list|length }}</div>
+            <div class="stat-label">Vehicle Types</div>
+        </div>
+    </div>
+
+    <!-- Today's Rentals -->
+    <div class="row">
+        <div class="col-12">
+            <div class="rental-summary">
+                <h3><i class="fas fa-calendar-day"></i> Today's Rentals</h3>
+                {% if today_rentals %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Vehicle</th>
+                                <th>Customer</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Total Price</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rental in today_rentals %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="rental-item-image me-3" style="background-image: url('{{ rental.vehicle.image_url }}')"></div>
+                                        <div>
+                                            <div class="fw-bold">{{ rental.vehicle.name }}</div>
+                                            <small class="text-muted">{{ rental.vehicle.model }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <div class="fw-bold">{{ rental.user.username }}</div>
+                                        <small class="text-muted">{{ rental.user.email }}</small>
+                                        <br>
+                                        <small class="text-muted">Phone: {{ rental.user.phone }}</small>
+                                    </div>
+                                </td>
+                                <td>{{ rental.start_date.strftime('%B %d, %Y') }}</td>
+                                <td>{{ rental.end_date.strftime('%B %d, %Y') }}</td>
+                                <td class="fw-bold text-success">${{ "%.2f"|format(rental.total_price) }}</td>
+                                <td>
+                                    {% if rental.is_returned %}
+                                        <span class="badge bg-success">Returned</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Active</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-calendar-times fa-2x text-muted mb-3"></i>
+                    <h5>No rentals today</h5>
+                    <p class="text-muted">There are no active rentals for today.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- All Active Rentals -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="rental-summary">
+                <h3><i class="fas fa-list"></i> All Active Rentals</h3>
+                {% if active_rentals %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Vehicle</th>
+                                <th>Customer</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Total Price</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rental in active_rentals %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="rental-item-image me-3" style="background-image: url('{{ rental.vehicle.image_url }}')"></div>
+                                        <div>
+                                            <div class="fw-bold">{{ rental.vehicle.name }}</div>
+                                            <small class="text-muted">{{ rental.vehicle.model }} • {{ rental.vehicle.vehicle_type.upper() }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <div class="fw-bold">{{ rental.user.username }}</div>
+                                        <small class="text-muted">{{ rental.user.email }}</small>
+                                        <br>
+                                        <small class="text-muted">Phone: {{ rental.user.phone }}</small>
+                                    </div>
+                                </td>
+                                <td>{{ rental.start_date.strftime('%B %d, %Y') }}</td>
+                                <td>{{ rental.end_date.strftime('%B %d, %Y') }}</td>
+                                <td class="fw-bold text-success">${{ "%.2f"|format(rental.total_price) }}</td>
+                                <td>
+                                    {% if rental.is_returned %}
+                                        <span class="badge bg-success">Returned</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Active</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#rentalModal{{ rental.id }}">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        {% if not rental.is_returned %}
+                                        <a href="{{ url_for('return_vehicle', rental_id=rental.id) }}" 
+                                           class="btn btn-sm btn-outline-danger"
+                                           onclick="return confirm('Mark this vehicle as returned?')">
+                                            <i class="fas fa-undo"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-list fa-2x text-muted mb-3"></i>
+                    <h5>No active rentals</h5>
+                    <p class="text-muted">There are no active rentals at the moment.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rental Detail Modals -->
+{% for rental in active_rentals %}
+<div class="modal fade" id="rentalModal{{ rental.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Rental Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="rental-item-image mb-3" style="background-image: url('{{ rental.vehicle.image_url }}')"></div>
+                    </div>
+                    <div class="col-md-8">
+                        <h5>{{ rental.vehicle.name }} - {{ rental.vehicle.model }}</h5>
+                        <p class="text-muted">{{ rental.vehicle.vehicle_type.upper() }} • {{ rental.vehicle.mileage }}</p>
+                        
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Start Date:</strong><br>
+                                {{ rental.start_date.strftime('%B %d, %Y') }}
+                            </div>
+                            <div class="col-6">
+                                <strong>End Date:</strong><br>
+                                {{ rental.end_date.strftime('%B %d, %Y') }}
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <h6>Customer Information</h6>
+                        <p><strong>Name:</strong> {{ rental.user.username }}</p>
+                        <p><strong>Email:</strong> {{ rental.user.email }}</p>
+                        <p><strong>Phone:</strong> {{ rental.user.phone }}</p>
+                        
+                        <hr>
+                        
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Duration:</strong><br>
+                                {{ (rental.end_date - rental.start_date).days }} days
+                            </div>
+                            <div class="col-6">
+                                <strong>Total Price:</strong><br>
+                                <span class="fw-bold text-success">${{ "%.2f"|format(rental.total_price) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                {% if not rental.is_returned %}
+                <a href="{{ url_for('return_vehicle', rental_id=rental.id) }}" 
+                   class="btn btn-danger"
+                   onclick="return confirm('Mark this vehicle as returned?')">
+                    <i class="fas fa-undo"></i> Mark as Returned
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

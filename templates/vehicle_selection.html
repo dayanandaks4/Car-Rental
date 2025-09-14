@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Vehicle Selection - Rental App{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-center mb-5">
+                <i class="fas fa-car-side"></i> Choose Your Vehicle
+            </h1>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="search-container">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Search vehicles...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="vehicleTypeSelect">
+                    <option value="">All Types</option>
+                    <option value="car">Cars</option>
+                    <option value="bike">Bikes</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-outline-primary w-100" id="clearFilters">
+                    <i class="fas fa-times"></i> Clear Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vehicle Type Tabs -->
+    <ul class="nav nav-pills vehicle-type-tabs justify-content-center" id="vehicleTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="cars-tab" data-bs-toggle="pill" data-bs-target="#cars" type="button" role="tab">
+                <i class="fas fa-car"></i> Cars
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="bikes-tab" data-bs-toggle="pill" data-bs-target="#bikes" type="button" role="tab">
+                <i class="fas fa-motorcycle"></i> Bikes
+            </button>
+        </li>
+    </ul>
+
+    <!-- Vehicle Selection Controls -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <button class="btn btn-outline-primary me-2" id="selectAllBtn">Select All</button>
+            <button class="btn btn-success" id="proceedBtn" disabled>Select vehicles to proceed</button>
+        </div>
+    </div>
+
+    <!-- Vehicle Content -->
+    <div class="tab-content" id="vehicleTabsContent">
+        <!-- Cars Tab -->
+        <div class="tab-pane fade show active" id="cars" role="tabpanel">
+            <div class="row" id="vehicleContainer">
+                {% for car in cars %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="vehicle-card">
+                        <div class="vehicle-image" style="background-image: url('{{ car.image_url }}')"></div>
+                        <div class="vehicle-info">
+                            <h5 class="vehicle-name">{{ car.name }}</h5>
+                            <p class="vehicle-model">{{ car.model }}</p>
+                            <div class="vehicle-specs">
+                                <div class="spec-item">
+                                    <div class="spec-label">Mileage</div>
+                                    <div class="spec-value">{{ car.mileage }}</div>
+                                </div>
+                                <div class="spec-item">
+                                    <div class="spec-label">Type</div>
+                                    <div class="spec-value">{{ car.vehicle_type.upper() }}</div>
+                                </div>
+                            </div>
+                            <div class="price">${{ "%.2f"|format(car.price_per_day) }}/day</div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-success availability-status">Available</span>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input vehicle-checkbox" type="checkbox" value="{{ car.id }}" id="vehicle{{ car.id }}">
+                                <label class="form-check-label" for="vehicle{{ car.id }}">
+                                    Select for rental
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Bikes Tab -->
+        <div class="tab-pane fade" id="bikes" role="tabpanel">
+            <div class="row" id="vehicleContainerBikes">
+                {% for bike in bikes %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="vehicle-card">
+                        <div class="vehicle-image" style="background-image: url('{{ bike.image_url }}')"></div>
+                        <div class="vehicle-info">
+                            <h5 class="vehicle-name">{{ bike.name }}</h5>
+                            <p class="vehicle-model">{{ bike.model }}</p>
+                            <div class="vehicle-specs">
+                                <div class="spec-item">
+                                    <div class="spec-label">Mileage</div>
+                                    <div class="spec-value">{{ bike.mileage }}</div>
+                                </div>
+                                <div class="spec-item">
+                                    <div class="spec-label">Type</div>
+                                    <div class="spec-value">{{ bike.vehicle_type.upper() }}</div>
+                                </div>
+                            </div>
+                            <div class="price">${{ "%.2f"|format(bike.price_per_day) }}/day</div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-success availability-status">Available</span>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input vehicle-checkbox" type="checkbox" value="{{ bike.id }}" id="vehicle{{ bike.id }}">
+                                <label class="form-check-label" for="vehicle{{ bike.id }}">
+                                    Select for rental
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle tab switching
+    const carTab = document.getElementById('cars-tab');
+    const bikeTab = document.getElementById('bikes-tab');
+    const vehicleContainer = document.getElementById('vehicleContainer');
+    const vehicleContainerBikes = document.getElementById('vehicleContainerBikes');
+    
+    carTab.addEventListener('click', function() {
+        updateVehicleCheckboxes(vehicleContainer);
+    });
+    
+    bikeTab.addEventListener('click', function() {
+        updateVehicleCheckboxes(vehicleContainerBikes);
+    });
+    
+    // Clear filters
+    document.getElementById('clearFilters').addEventListener('click', function() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('vehicleTypeSelect').value = '';
+        location.reload();
+    });
+});
+
+function updateVehicleCheckboxes(container) {
+    const checkboxes = container.querySelectorAll('.vehicle-checkbox');
+    const allCheckboxes = document.querySelectorAll('.vehicle-checkbox');
+    
+    // Update selection count
+    const selectedCount = Array.from(allCheckboxes).filter(cb => cb.checked).length;
+    const selectAllBtn = document.getElementById('selectAllBtn');
+    const proceedBtn = document.getElementById('proceedBtn');
+    
+    if (selectAllBtn) {
+        selectAllBtn.textContent = selectedCount === allCheckboxes.length ? 'Deselect All' : 'Select All';
+    }
+    
+    if (proceedBtn) {
+        proceedBtn.disabled = selectedCount === 0;
+        proceedBtn.textContent = selectedCount > 0 ? `Proceed with ${selectedCount} vehicle(s)` : 'Select vehicles to proceed';
+    }
+}
+</script>
+{% endblock %}
